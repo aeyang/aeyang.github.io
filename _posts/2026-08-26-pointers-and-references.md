@@ -107,10 +107,28 @@ newFriend = &bob;
 On the first line we declare and initialize a pointer. The **\*** after `Person` changes the meaning of the line to be: "newFriend is a pointer to a Person". No `Person` object was created in memory here. What was created is a Person pointer variable with size 8 bytes (on a 64 bit system) - big enough to hold any one memory address.
 Also, notice what we get for free with pointers: The ability to represent a current absence of a chosen friend or "optionality".
 
-On the 2nd and 3rd lines, the **&** in `&alice` is called the **address-of operator**. It produces `alice`'s memory address. So `newFriend` holds the memory address of the `Person` object named `alice`... and then `bob`.
+On the 2nd and 3rd code lines, the **&** in `&alice` is called the **address-of operator**. It produces `alice`'s memory address. So `newFriend` holds the memory address of the `Person` object named `alice`... and then `bob`. The diagram below illustrates what this looks like in memory. Notice that the pointer itself lives in memory and simply stores the memory address of alice.
+
+```
+Memory
+─────────────────────────────────────
+
+0x1000    newFriend
+          ┌─────────────────┐
+          │ 0x5000          │
+          └─────────────────┘
+
+...
+
+0x5000    Person (alice)
+          ┌─────────────────┐
+          │ age = 32        │
+          │ ...             │
+          └─────────────────┘
+```
 
 **Very Important:** We have now seen two completely different uses for the **&** symbol and its crucial to get them straight:
-- In `Person& person1 = alice;`, the **&** is attached to the `Person` type and declares *what kind of variable* `person1 is (a `Person` reference type).
+- In `Person& person1 = alice;`, the **&** is attached to the `Person` type and declares *what kind of variable* `person1` is (a `Person` reference type).
 - In `newFriend = &alice;`, the **&** is part of the expression. It is a unary operator (like -x) which operates on an object and returns its address.
 
 So now we see that a pointer can "point" to different objects by storing the address of different objects.
@@ -120,25 +138,24 @@ Lets say I've chosen my friend bob (`newFriend = &bob`). How do I read his `age`
 I can't just do `newFriend.age`; recall that `newFriend` is just an 8 byte address, it doesn't have an `age` member. The `Person` object at that 8 byte memory address has the `age` member.
 
 ```
-Person newFriendObj = *newFriend;
+// Getting a Person's age
+
+Person newFriendObj = *newFriend; // Example 1
 newFriendObj.age;
 
-// this is equivalent to:
+(*newFriend).age; // Example 2
 
-(*newFriend).age;
-
-// this is equivalent to:
-
-newFriend->age // C++ shorthand
+newFriend->age // Example 3
 ```
-In the first example above, we're showing a second usage of the **\*** symbol. In this case, **\*** is the **Dereferencing Operator** which returns the object that a pointer points to. However, this has the disadvantage of creating a new `Person` object named `newFriendObj`
+In the first example above, we're showing a different usage of the **\*** symbol. In this case, **\***'s use is known as the **Dereferencing Operator** which returns the object that a pointer points to. We can save this object as we see in this example, but this has the disadvantage of creating a new `Person` object named `newFriendObj`
 
-The second example again uses the dereference operator but saves a new `Person` object from being created.
+The second example again uses the dereference operator but prevents a new `Person` object from being created.
 
 The third example is what we want to use most of the time. C++ provides a shorthand operator **->**. This is nice as it makes the indirection explicit in the syntax - you can read it as "follow this pointer to the actual object, then access its member".
 
 ## Conclusion
-We now know the foundational concepts and syntax that was shown at the top of this blog (and also why the code wouldn't compile...)
+We now know the foundational concepts and syntax that was shown at the top of this blog (and also why that code wouldn't compile...)
+We've also learned about using **&** and **\*** symbols to declare different variable types as well as using them as the **address-of** and **dereference** operators respectively.
 
-We should be able to begin to reason about these constructs where we see them in real C++ code.
-
+There are more complex motivations for using these constructs which we will get to in future posts.
+But we now have enough context to start to reasoning about what these constructs are doing when we see them in real C++ code.
