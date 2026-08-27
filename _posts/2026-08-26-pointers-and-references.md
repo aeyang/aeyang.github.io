@@ -1,11 +1,11 @@
 ---
-title: Pointers and References in C++
+title: Pointers and References in C++ (Part 1)
 date: 2026-08-26 12:00:00 -0700
 categories: [c++]
 tags:
 ---
 
-# Goal
+## Goal
 The main goal of this post is to give us a working introduction to pointers and references in C++. This is not a deep nor comprehensive study. We are just trying to remove that slight sense of confusion upon encountering the **\*** or **&** operators and replace it, hopefully, with slight curiosity.
 
 Lets make this more concrete. By the end, we should have an intuitive understanding of the code below:
@@ -25,7 +25,7 @@ Person* person3; // Example 3
 person3->age++;
 ```
 
-# Ordinary Object Creation
+## Ordinary Object Creation
 Lets think about what exactly is happening in Example 1. An object of type `Person` is created and given the name `person1`. Literally, some memory has been allocated on the stack for `person1`.
 ```
 ┌─────────────────────────┐
@@ -60,8 +60,8 @@ This phenomenon is called **Pass By Value**. C++ makes a copy of primitive and o
 
 But what we actually wanted was not to increment the age for a copy of `person1`... We wanted to increment the age for `person1` itself! We need to somehow get `person1` itself into the `birthday` function. This is called **Pass By Reference**, which conveniently brings us to... References.
 
-# References
-Refer back to Example 2 at the beginning of this post. And now see how we change the parameter on the `birthday` function.
+## References
+Refer back to Example 2 at the beginning of this post. See how we change the parameter on the `birthday` function.
 ```
 void birthday(Person& personParameter) {
     personParameter.age++;
@@ -69,7 +69,7 @@ void birthday(Person& personParameter) {
 
 birthday(person1);
 ```
-The `&` changes what `personParameter` means. Instead of "Create a new Person initialized from the argument", its now "Give me another name for the passed-in Person". You can visualize it as two names for the same object:
+The `&` attached to the `Person` type changes the type of `personParameter`. Instead of meaning "Create a new Person initialized from the argument", it now means: "Give me another name for the passed-in Person". You can visualize it as two names for the same object:
 ```
                       ┌──────────────┐
                       │              │
@@ -80,7 +80,7 @@ The `&` changes what `personParameter` means. Instead of "Create a new Person in
 ```
 So when `birthday()` increments `personParameter`'s age, its actually incrementing `person1`'s age. This is what we wanted.
 
-Now, let me introduce a fundamental limitation of references that is important to know. Lets say there are two `Person`s and I'm trying to choose the `Person` I want to be friends with:
+Now, lets introduce a **fundamental limitation of references** that is important to know. Lets say there are two `Person`s and I'm trying to choose the `Person` I want to be friends with:
 ```
 Person alice;
 Person bob;
@@ -93,11 +93,11 @@ newFriend = bob; // This won't do what you think it will
 ```
 The last line won't make `newFriend` point to bob because **a reference can't be reseated**. Once a reference is initialized, it is *permanently bound* to the object it was initialized with for its entire lifetime. Side note - A reference must be initialized the moment you declare it. So just this: `Person& newFriend;` doesn't compile.
 
-Suffice it to say, this is not ideal. If we're familiar with Java, we know it doesn't take a second thought to reassign a `Person person` variable to bob, then alice, then back to bob. This is because in Java, a variable of class type is *always* just a handle/*pointer* to the object on the heap. Its never the object itself, unlike earlier in c++ where we created `Person person1`.
+The inability to switch what a reference "refers to" is not ideal. If we're familiar with Java, we know it doesn't take a second thought to reassign a `Person person` variable to bob, then alice, then back to bob. This is because in Java, a variable of class type is *always* just a handle/*pointer* to the object on the heap. Its never the object itself, unlike earlier in C++ where we created `Person person1`.
 
 So in C++, how do we get a *pointer* that can point (and be reassigned) to different objects?
 
-# Pointers
+## Pointers
 Lets just show the code first:
 ```
 Person* newFriend = nullptr;
@@ -115,7 +115,7 @@ On the 2nd and 3rd lines, the **&** in `&alice` is called the **address-of opera
 
 So now we see that a pointer can "point" to different objects by storing the address of different objects.
 
-## Dereferencing
+### Dereferencing
 Lets say I've chosen my friend bob (`newFriend = &bob`). How do I read his `age`?
 I can't just do `newFriend.age`; recall that `newFriend` is just an 8 byte address, it doesn't have an `age` member. The `Person` object at that 8 byte memory address has the `age` member.
 
@@ -136,4 +136,9 @@ In the first example above, we're showing a second usage of the **\*** symbol. I
 The second example again uses the dereference operator but saves a new `Person` object from being created.
 
 The third example is what we want to use most of the time. C++ provides a shorthand operator **->**. This is nice as it makes the indirection explicit in the syntax - you can read it as "follow this pointer to the actual object, then access its member".
+
+## Conclusion
+We now know the foundational concepts and syntax that was shown at the top of this blog (and also why the code wouldn't compile...)
+
+We should be able to begin to reason about these constructs where we see them in real C++ code.
 
