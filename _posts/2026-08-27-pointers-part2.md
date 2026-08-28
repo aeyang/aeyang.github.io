@@ -63,7 +63,7 @@ A pointer can perfectly model this relationship:
         Person* bestFriend;
     };
 
-    // alice starts her life with no best friend
+    // Alice starts her life with no best friend
     Person alice{30, nullptr};
     Person bob{40, nullptr};
     Person carol{25, nullptr};
@@ -98,7 +98,7 @@ A pointer can perfectly model this relationship:
 </div>
 
 ### Indirection - The Superpower of Pointers
-**Indirection**, or the ability to access something through an intermediate thing rather than accessing it directly, summarizes what we get with pointers.
+**Indirection**, or the ability to access something through an intermediate thing rather than accessing it directly, summarizes pointers' superpower. This comes in handy with more than just modeling relationships between objects, but we'll focus on this for this post.
 
 Below are more examples where indirection allows objects to form more complex structures that aren't possible by simply embedding objects inside each other by value:
 <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;" class="responsive-columns">
@@ -142,6 +142,7 @@ Below are more examples where indirection allows objects to form more complex st
 </div>
 
 ## A Pointer Does Not Keep its Target Alive
+Lets make a generator function for `bob` `Persons`. In case there are multiple `Alices` out there that need friends:
 ```
 Person* makeFriend() {
     Person bob;        // bob lives on the stack, only inside this function
@@ -162,6 +163,49 @@ Person* makeFriend() {
     Person* bob = new Person;   // bob lives on the heap now
     return bob;                 // ✅ still valid after return — heap outlives scope
 }
+```
+
+```
+     Program's Memory (RAM)
+   ┌───────────────────────────┐  high addresses
+   │          STACK            │
+   │  (local variables,        │
+   │   function frames)        │
+   │                           │
+   │   grows downward ↓        │
+   ├─────────────┬─────────────┤
+   │             ▼             │
+   │                           │
+   │      (free space)         │
+   │                           │
+   │             ▲             │
+   ├─────────────┴─────────────┤
+   │   grows upward ↑          │
+   │                           │
+   │           HEAP            │
+   │  (objects from `new`)     │
+   ├───────────────────────────┤
+   │   static / globals        │
+   ├───────────────────────────┤
+   │   code (your compiled     │
+   │        instructions)      │
+   └───────────────────────────┘  low addresses
+```
+
+```
+    Person* alice = new Person;   // alice.age = 30
+
+        STACK                          HEAP
+   ┌──────────────┐              ┌──────────────┐
+   │  alice       │              │   (Person)   │
+   │  ┌────────┐  │              │  ┌────────┐  │
+   │  │ 0x1A00 │──┼─────────────▶│  │ age:30 │  │  ← the actual Person
+   │  └────────┘  │              │  └────────┘  │     lives at 0x1A00
+   │   (a pointer,│              │              │
+   │    8 bytes)  │              └──────────────┘
+   └──────────────┘
+     the handle                   the object
+
 ```
 
 But... `new` doesn't clean itself up:
@@ -188,8 +232,8 @@ delete alice->friend;    // 💥 double-free if someone "cleans up" again
 ```
 
 The language doesn't track ownership for you. A raw pointer says nothing about who's responsible. The example above showed multiple pointers to one object but no overarching rule about who frees it. This leads to leaks, double-frees, or use-after-free gotchas.
-The ambiguity is a real problem, and it's a design problem.
+The ambiguity THE problem, and it's a design problem.
 
 ## Conclusion
-We have covered how pointers make modeling relationships between objects possible and also explored the fundamental pitfalls when working with pointers. These pitfalls point to fundamental questions of object lifetimes and ownership; the compiler has no answer for these.
+We have covered how pointers make modeling relationships between objects possible and also explored the fundamental pitfalls when working with pointers. These pitfalls point to fundamental questions of object lifetimes and ownership; the compiler has no answer for these.\
 In the next post, we will cover modern C++'s answer to these questions.
