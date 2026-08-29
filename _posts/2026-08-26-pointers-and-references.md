@@ -2,7 +2,7 @@
 title: Pointers and References in C++ (Part 1)
 date: 2026-08-26 12:00:00 -0700
 categories: [c++]
-tags:
+tags: [pointer]
 ---
 
 ## Goal
