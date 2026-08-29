@@ -42,7 +42,7 @@ One of the most intuitive reasons (but far from the only reason) for why pointer
 This doesn't work... A `Person` can't contain a `Person` best friend by value. As the right side shows, this leads to a situation of infinite size.
 
 **By Reference**\
-A reference does fix the size problem since under the hood, its implemented as an address (a small fixed size). However, we run into 2 problems if we have `friend` be a reference type. These should be familiar:
+A reference does fix the size problem since under the hood, its implemented as an address (a small fixed size). However, we run into 2 problems if we have `bestFriend` be a reference type. These should be familiar:
 1. *A reference must be initialized at declaration*. So, we MUST give `Alice` a bestFriend from the beginning of her existence. This also means `Alice` cannot ever NOT have a best friend (null). And though we might wish otherwise, this isn't an accurate model of reality.
 2. *A reference cannot be reseated*. `Alice` could never change her best friend to someone else.
 
@@ -240,7 +240,8 @@ Note that the `newBob` pointer lives on the stack, but the address it holds is a
 ## Who is Responsible for an Object's Lifecycle?
 Hooray, we made `newBob` live! He's going to live a long and fulfilling life!... Well, until `alice` wants a new best friend. When that happens, we would just call `delete newBob` to make sure that Heap memory got freed up for other objects. After all, we don't want the whole program to crash from running out of heap memory.
 
-But what if we forgot? Maybe we created hundreds of `Persons` and forgot to `delete` a few. And then, the function in which `alice` was befriending different people finally reached its end. Not only did `newBob` (and others) not get `deleted`, but now the `newBob` pointer doesn't exist anymore because the stack frame was popped. But the `Person` object it pointed to still exists on the heap but now there is no way of reaching it anymore! This is known as a **Memory Leak**... and it was all **our** fault. The compiler can't help us here. We were the one to create all those objects on the heap, so the **responsibility** for freeing up that heap memory falls on us.
+But what if we forgot? Maybe we created hundreds of `Persons` and forgot to `delete` a few. And then, the function in which `alice` was befriending different people finally reached its end. So, not only did `newBob` (and others) not get `deleted`, but now the `newBob` pointer doesn't exist anymore since the stack frame was popped./
+In a twist of fate seemingly plucked from the mind of Edgar Allan Poe himself, the `Person` object is still alive on the heap. But as no pointer to its address exists anymore, there is no way of reaching the object again! This terrifying state is known as... a **Memory Leak**. The compiler can't help us here. We were the one to create all those objects on the heap, so the **responsibility** for freeing up that heap memory falls on us!
 
 One could argue that we should just "be better". But before we conclude anything, lets show some other ways we can trip over ourselves trying to manage object lifecycles:
 
