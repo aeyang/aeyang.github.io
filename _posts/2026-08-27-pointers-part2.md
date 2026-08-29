@@ -240,7 +240,8 @@ Note that the `newBob` pointer lives on the stack, but the address it holds is a
 ## Who is Responsible for an Object's Lifecycle?
 Hooray, we made `newBob` live! He's going to live a long and fulfilling life!... Well, until `alice` wants a new best friend. When that happens, we would just call `delete newBob` to make sure that Heap memory got freed up for other objects. After all, we don't want the whole program to crash from running out of heap memory.
 
-But what if we forgot? Maybe we created hundreds of `Persons` and forgot to `delete` a few. And then, the function in which `alice` was befriending different people finally reached its end. So, not only did `newBob` (and others) not get `deleted`, but now the `newBob` pointer doesn't exist anymore since the stack frame was popped./
+But what if we forgot? Maybe we created hundreds of `Persons` and forgot to `delete` a few. And then, the function in which `alice` was befriending different people finally reached its end. So, not only did `newBob` (and others) not get `deleted`, but now the `newBob` pointer doesn't exist anymore since the stack frame was popped.
+
 In a twist of fate seemingly plucked from the mind of Edgar Allan Poe himself, the `Person` object is still alive on the heap. But as no pointer to its address exists anymore, there is no way of reaching the object again! This terrifying state is known as... a **Memory Leak**. The compiler can't help us here. We were the one to create all those objects on the heap, so the **responsibility** for freeing up that heap memory falls on us!
 
 One could argue that we should just "be better". But before we conclude anything, lets show some other ways we can trip over ourselves trying to manage object lifecycles:
