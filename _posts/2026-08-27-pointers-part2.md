@@ -260,4 +260,4 @@ The AMBIGUITY is the problem.
 
 ## Conclusion
 We have covered how pointers make modeling relationships between objects possible and also explored the fundamental pitfalls when working with pointers. These pitfalls point to fundamental questions of object lifetimes and ownership; the compiler has no answer for these.\
-In the next post, we will cover modern C++'s answer to these questions.
+In the next post, we will cover modern C++'s answer to these common pitfalls.
