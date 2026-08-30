@@ -164,7 +164,7 @@ Note: Contrast this with what Java does. The GC keeps objects "alive" as long as
 How do we make `bob` outlive the `makeBobs` function that created him to avoid the dangling pointer problem?
 We need to get into object lifetimes, and for that we need to take a short detour into:
 
-### Stack and Heap
+### Stack & Heap
 An initial mental model:
 When a C++ program starts, the OS gives it a chunk of RAM memory (this is an oversimplification and saves the discussion of virtual address space and physical RAM for another day). This chunk is divided into two main regions: the STACK and the HEAP. See the diagram below:
 
@@ -207,6 +207,7 @@ Person* alice = new Person;   // a Person is allocated on the heap
 delete alice;                 // ...YOU explicitly destroy it
 ```
 
+### new & delete
 Notice the new syntax. `new` creates objects on the heap (returns a pointer). `delete` destroys it (takes a pointer).
 Now we can fix the problem from before. We simply create `bob` with `new`, so it lives past the end of `makeBobs`
 ```
@@ -235,7 +236,7 @@ Observe what occurred in memory when you ran `Person* newBob = makeBobs();`
      the handle                   the object
 
 ```
-Note that the `newBob` pointer lives on the stack, but the address it holds is an address in heap.
+> Note that the `newBob` pointer lives on the stack, but the address it holds is an address in heap.
 
 ## Who is Responsible for an Object's Lifecycle?
 Hooray, we made `newBob` live! He's going to live a long and fulfilling life!... Well, until `alice` wants a new best friend. When that happens, we would just call `delete newBob` to make sure that Heap memory got freed up for other objects. After all, we don't want the whole program to crash from running out of heap memory.
@@ -247,14 +248,16 @@ In a twist of fate seemingly plucked from the mind of Edgar Allan Poe himself, t
 One could argue that we should just "be better". But before we conclude anything, lets show some other ways we can trip over ourselves trying to manage object lifecycles:
 
 ```
-Person* alice = new Person;
-Person* bob   = new Person;
-alice->bestFriend = bob;     // now TWO pointers reach bob: `bob` and `alice->bestFriend`
+void aliceMakesFriends() {
+    Person* alice = new Person;
+    Person* bob   = new Person;
+    alice->bestFriend = bob;     // now TWO pointers reach bob: `bob` and `alice->bestFriend`
 
-delete bob;              // pointer #1 frees it...
-alice->bestFriend->age;      // 💥 USE-AFTER-FREE: alice->bestFriend now dangles. Undefined behavior
-delete alice->bestFriend;    // 💥 DOUBLE-FREE if someone "cleans up" again. Undefined behavior
-// or: nobody deletes → 💥 MEMORY LEAK
+    delete bob;              // pointer #1 frees it...
+    alice->bestFriend->age;      // 💥 USE-AFTER-FREE: alice->bestFriend now dangles. Undefined behavior
+    delete alice->bestFriend;    // 💥 DOUBLE-FREE if someone "cleans up" again. Undefined behavior
+    // or: nobody deletes → 💥 MEMORY LEAK
+}
 ```
 
 To summarize: For objects created with `new`, C++ doesn't handle object lifecycle for you. And the raw pointer that gets returned says nothing about who's responsible for the object it points to. The example above showed multiple pointers to one object but no overarching rule about which pointer holds the responsibility to free it. This leads to leaks, double-frees, or use-after-free gotchas.
