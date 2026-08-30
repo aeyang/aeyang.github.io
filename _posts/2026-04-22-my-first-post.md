@@ -12,3 +12,11 @@ Writing this blog forces me to state what I think I know. And in the process, ul
 
 # Blog Post Topics
 I've recently been introduced to and interested in Nvidia CUDA. So the posts will primarily be on C++ and CUDA concepts that I am learning. But if I feel inspired, I might include posts on other topics I'm learning about outside of tech / software engineering.
+
+# Blog Writing Philosophy
+
+## Teaching Things Forward
+Many concepts are often taught "backwards", meaning the solution is taught before introducing the problem (if the problem is mentioned at all). Learning the solution before deeply understanding the problem makes the concept feel arbitrary, like a rule that must be followed for no reason.\
+There are good reasons for this approach and its the best if one wants to get productive ASAP, especially at work. But for me, this leads to the feeling that what I know is just a shallow layer hovering above real understanding.
+
+I will try my best to write posts "forwards". Starting from a basic level of understanding and building up, using a clear understanding of the problems faced to move the complexity level up. When a solution/concept is given, it should feel obvious because the reader has seen/felt the problem that it solves. Thats the goal.
