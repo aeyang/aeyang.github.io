@@ -73,17 +73,8 @@ Its really cool of the compiler to **automatically run the destructor** when a l
 
 **What if we could have the destructor that the compiler automatically calls also handle calling delete for the heap objects?**
 
-## Write an "Ownership Wrapper" for Person
-<div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;" class="responsive-columns">
-  <style>
-    @media (min-width: 768px) {
-      .responsive-columns { flex-direction: row !important; }
-    }
-  </style>
-
-  <!-- Left Column -->
-  <div style="flex: 1; width: 100%;" markdown="1">
-
+## An "Ownership Wrapper" for Person
+```
     class PersonOwner {
         private:
             Person* person;
@@ -101,11 +92,8 @@ Its really cool of the compiler to **automatically run the destructor** when a l
                 person->bestFriend = friendOwner.person;
             }
         };
-  </div>
-
-  <!-- Right Column -->
-  <div style="flex: 1; width: 100%;" markdown="1">
-
+```
+```
     void aliceMakesFriends() {
 
         PersonOwner alice;
@@ -113,13 +101,11 @@ Its really cool of the compiler to **automatically run the destructor** when a l
         alice.setBestFriend(bob);
 
         ...
-        // We don't need to call delete
+        // With the wrapper, we don't need to call delete ourselves now!
     }
+```
 
-  </div>
-</div>
-
-On the left, we've written this class that takes ownership of a Person object on the heap. Something fundamentally different is now happening when `aliceMakesFriends` ends. **Since both `alice` and `bob` are both local variables on the stack, the compiler calls their destructors automatically.** When those destructors are run, they `delete person` for us!
+On the top code section, we've written this class that takes ownership of a Person object on the heap. Something fundamentally different is now happening when `aliceMakesFriends` ends (bottom code section). **Since both `alice` and `bob` are both local variables on the stack, the compiler calls their destructors automatically.** When those destructors are run, they `delete person` for us!
 
 This `PersonOwner` object frees us from the responsibility of remembering to call `delete`. And it ties the destruction of a *resource* (the `Person` on the heap), to the lifetime of an object (the `PersonOwner`).
 
@@ -127,47 +113,80 @@ This is the core concept behind **RAII** - *Resource Acquisition Is Intializatio
 
 
 ## RAII
-What we built above is the RAII pattern. "Resource release is destruction".
+What we built above is the RAII pattern. It stands for "Resource Acquisition Is Intialization". But its also the opposite: "Resource Release Is Destruction".
 
-### Pushback
-One pushback to make sure we understand:
-Question: It works on deleting the resource when its destructor runs. But for resources on
-the heap, it lasts the entire length of the program... so its destructor doesn't run right? Not unless the programmer remembers to call it, which puts us in the exact same predicament?
+One more illustration to make sure we understand what is going on:
 
-Answer: The pointer RAII is actually on the stack, the object is on the heap. When the stack frame is popped, the pointer RAII's destructor will run, freeing the heap object.
+<div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;" class="responsive-columns">
+  <style>
+    @media (min-width: 768px) {
+      .responsive-columns { flex-direction: row !important; }
+    }
+  </style>
 
-```
-        STACK                          HEAP
-   ┌──────────────┐              ┌──────────────┐
-   │  owner       │              │   (Person)   │
-   │ (unique_ptr) │─────────────▶│   age: 40    │
-   │  ~unique_ptr │              └──────────────┘
-   │  runs at }   │                     ▲
-   └──────┬───────┘                     │
-          │  at scope exit, owner's destructor │
-          └───────────── calls delete ─────────┘
-```
-If the pointer RAII is also on the heap, then yes you are right, unique_ptr will not run automatically, and you'll have to manually `delete` it which defeats the whole purpose.
-```
-auto* owner = new std::unique_ptr<Person>(std::make_unique<Person>());
-//    ^^^^ the unique_ptr is now ON THE HEAP
-```
+  <!-- Left Column -->
+  <div style="flex: 1; width: 100%;" markdown="1">
 
-### Payoff of RAII
-Show example from https://www.youtube.com/watch?v=Rfu06XAhx90 where RAII can replace all those delete calls.
+                  STACK                                   HEAP
+            ┌────────────────────┐                  ┌──────────────────┐
+            │  alice             │                  │   Person #A      │
+            │  (PersonOwner)     │                  │   age: 30        │
+            │  ┌──────────────┐  │  owns (person●)  │   bestFriend ●───┼──┐
+            │  │ person ●─────┼──┼─────────────────▶│                  │  │
+            │  └──────────────┘  │                  └──────────────────┘  │
+            │  ~PersonOwner()    │                                        │
+            │   runs at }        │                    setBestFriend made  │
+            └────────────────────┘                    #A point at #B ─────┘
+                                                        (non-owning link) │
+            ┌────────────────────┐                  ┌──────────────────┐  │
+            │  bob               │                  │   Person #B      │◀─┘
+            │  (PersonOwner)     │                  │   age: 40        │
+            │  ┌──────────────┐  │  owns (person●)  │   bestFriend: ∅  │
+            │  │ person ●─────┼──┼─────────────────▶│                  │
+            │  └──────────────┘  │                  └──────────────────┘
+            │  ~PersonOwner()    │
+            │   runs at }        │
+            └────────────────────┘
+
+  </div>
+
+  <!-- Right Column -->
+  <div style="flex: 1; width: 100%;" markdown="1">
+
+    scope exit of aliceMakesFriends()
+        │
+        │  local objects destroyed in REVERSE order of construction
+        │  (bob was constructed last → bob destroyed first)
+        ▼
+    ┌─────────────────────────────┐
+    │ bob.~PersonOwner() runs      │  ── calls delete person; ──▶  💀 Person #B freed
+    └─────────────────────────────┘
+            │
+            ▼
+    ┌─────────────────────────────┐
+    │ alice.~PersonOwner() runs    │  ── calls delete person; ──▶  💀 Person #A freed
+    └─────────────────────────────┘
+            │
+            ▼
+    ✅ both heap Persons freed automatically — no manual delete,
+        no leak, exactly one delete per new.
+  </div>
+</div>
+
+## RAII is More Than Just Pointers
+
+std::fstream (RAII for files) - don't forget to close the file
+std::lock_guard (RAII for locks) - don't forget to unlock a lock
+CUDA device memory (a wrapper whose destructor calls cudaFree. RAII for CUDA device memory)
 
 ## C++ std RAII Objects
 
 ### std::unique_ptr
 "I own this object, and I'm solely responsible for its lifetime"
 
-## RAII is Bigger Than Memory
-std::fstream (RAII for files) - don't forget to close the file
-std::lock_guard (RAII for locks) - don't forget to unlock a lock
-CUDA device memory (a wrapper whose destructor calls cudaFree. RAII for CUDA device memory)
-
 ## Conclusion
 With RAII, ownership becomes a type, not a convention. The compiler now enforces what used to be programmer discipline.
 
 ## More Resources on RAII
-https://www.youtube.com/watch?v=Rfu06XAhx90
+- [Back to Basics: RAII in C++ - Andre Kostur - CppCon 2022](https://www.youtube.com/watch?v=Rfu06XAhx90)
+    - At 8:12 is a clear example of the ease-of-use with RAII. No more `delete` or `mutex.unlock()` wherever a function might exit.

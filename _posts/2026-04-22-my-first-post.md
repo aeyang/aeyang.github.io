@@ -11,7 +11,7 @@ tags: [intro]
 Writing this blog forces me to state what I think I know. And in the process, ultimately reveals to me where the gaps in my understanding are. It's not inaccurate to say that I am writing this blog for myself.
 
 # Blog Post Topics
-I've recently been interested in Nvidia CUDA. So the posts will primarily be on C++ and CUDA concepts that I am learning. But aspirationally, I'd like to write posts on other topics I'm learning about outside of tech / software engineering like energy, financial plumbing system, and health.
+I've recently been interested in Nvidia CUDA. So the posts will primarily be on C++ and CUDA concepts that I am learning. But aspirationally, I'd like to write posts on other topics I'm learning about outside of tech / software engineering.
 
 # Blog Writing Philosophy
 
